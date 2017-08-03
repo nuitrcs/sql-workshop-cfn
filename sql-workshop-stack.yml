@@ -1,0 +1,109 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description:
+  An RDS instance and EC2 instance in a security group that allows SSH and postgresql access from the specified networks.
+
+Parameters: 
+  RDSInstanceType: 
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+    Description: Enter t2.micro, t2.small, t2.medium, or t2.large. Default is t2.micro.
+
+  EC2InstanceType: 
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.micro
+      - t2.large
+    Description: Enter t2.micro or t2.large. Default is t2.micro.
+
+  EC2KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of the existing EC2 Keypair to use to create the EC2 instance.
+    
+  EC2InstanceAMI:
+    Description: The AMI to use for the instances. Default is Amazon Linux (Ohio Region)
+    Type: String
+    Default: ami-8a7859ef
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: ID of the VPC to create the security group and EC2 instance in. Default is art-rch-rcs peered VPC.
+    Default: vpc-71e96318
+
+  SubnetId:
+    Type: AWS::EC2::Subnet
+    Description: The subnet to launch the EC2 instance into. Defaults to art-rch-rcs peered VPC public subnet 1.
+    Default: subnet-85148dec 
+
+  DbMasterUsername:
+    Description: DB Master Username
+    Default: admin
+
+  DbMasterPassword:
+    Description: DB Master Password
+    Default: admin
+
+Resources:
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: SQL Workshop Security Group
+      GroupDescription: Allows inbound SSH and postgresql
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - CidrIp: "129.105.0.0/16"
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - CidrIp: "165.124.0.0/16"
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - CidrIp: "10.10.0.0/8"
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp
+        - CidrIp: "129.105.0.0/16"
+          FromPort: 5432
+          ToPort: 5432
+          IpProtocol: tcp
+        - CidrIp: "165.124.0.0/16"
+          FromPort: 5432
+          ToPort: 5432
+          IpProtocol: tcp
+        - CidrIp: "10.10.0.0/8"
+          FromPort: 5432
+          ToPort: 5432
+          IpProtocol: tcp
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2InstanceAMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: !Ref EC2KeyName
+      SecurityGroupIds: [!Ref SecurityGroup]
+      SubnetId: !Ref SubnetId
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 100
+      DBInstanceClass: !Ref RDSInstanceType
+      DBName: sqlworkshop
+      Engine: postgres
+      EngineVersion: 9.4.11
+      MasterUsername: !Ref DbMasterUsername
+      MasterUserPassword: !Ref DbMasterPassword
+      MultiAZ: No
+      PubliclyAccessible: Yes
+      StorageType: standard
+      VPCSecurityGroups: [!Ref SecurityGroup]
