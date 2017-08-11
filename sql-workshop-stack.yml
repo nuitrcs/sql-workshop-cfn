@@ -79,10 +79,10 @@ Parameters:
 
 Resources:
 
-  SecurityGroup:
+  EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: SQL Workshop Security Group
+      GroupName: SQL Workshop EC2 Security Group
       GroupDescription: Allows inbound SSH and postgresql
       VpcId: !Ref VpcId
       SecurityGroupIngress:
@@ -117,10 +117,9 @@ Resources:
       ImageId: !Ref EC2InstanceAMI
       InstanceType: !Ref EC2InstanceType
       KeyName: !Ref EC2KeyName
-      SecurityGroupIds: [!Ref SecurityGroup]
+      SecurityGroupIds: [!Ref EC2SecurityGroup]
       SubnetId: !Ref SubnetId
       IamInstanceProfile: !Ref InstanceProfileName
-      DependsOn: RDSInstance
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash -xe
@@ -132,6 +131,7 @@ Resources:
           echo ${RDSInstance.Endpoint.Address} >/tmp/dbhost
           # copy script
           # /tmp/setup-sql-workshop-users.sh </tmp/netids.txt
+    DependsOn: RDSInstance
     Metadata:
       AWS::CloudFormation::Init:
         config:
@@ -153,5 +153,5 @@ Resources:
       MultiAZ: No
       PubliclyAccessible: Yes
       StorageType: standard
-      VPCSecurityGroups: [!Ref SecurityGroup]
+      VPCSecurityGroups: [!Ref EC2SecurityGroup]
       DBInstanceIdentifier: !Ref DbInstanceName
