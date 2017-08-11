@@ -7,13 +7,13 @@ Description:
 Parameters: 
   RDSInstanceType: 
     Type: String
-    Default: t2.micro
+    Default: db.t2.micro
     AllowedValues: 
-      - t2.micro
-      - t2.small
-      - t2.medium
-      - t2.large
-    Description: Enter t2.micro, t2.small, t2.medium, or t2.large. Default is t2.micro.
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
+    Description: Enter db.t2.micro, db.t2.small, db.t2.medium, or db.t2.large. Default is db.t2.micro.
 
   EC2InstanceType: 
     Type: String
@@ -24,31 +24,58 @@ Parameters:
     Description: Enter t2.micro or t2.large. Default is t2.micro.
 
   EC2KeyName:
-    Type: AWS::EC2::KeyPair::KeyName
+    Type: String
     Description: Name of the existing EC2 Keypair to use to create the EC2 instance.
     
   EC2InstanceAMI:
-    Description: The AMI to use for the instances. Default is Amazon Linux (Ohio Region)
+    Description: The AMI to use for the instances. Default is Amazon linux (Ohio Region). cfn-init required.
     Type: String
     Default: ami-8a7859ef
 
   VpcId:
-    Type: AWS::EC2::VPC::Id
+    Type: String
     Description: ID of the VPC to create the security group and EC2 instance in. Default is art-rch-rcs peered VPC.
     Default: vpc-71e96318
 
   SubnetId:
-    Type: AWS::EC2::Subnet
+    Type: String
     Description: The subnet to launch the EC2 instance into. Defaults to art-rch-rcs peered VPC public subnet 1.
-    Default: subnet-85148dec 
+    Default: subnet-85148dec
 
   DbMasterUsername:
+    Type: String
     Description: DB Master Username
-    Default: admin
+    Default: rcsadmin
 
   DbMasterPassword:
+    Type: String
     Description: DB Master Password
-    Default: admin
+    Default: rcsadmin
+
+  DbSubnetGroupName:
+    Type: String
+    Description: DB Subnet Group to place the RDS instance in. Must be same VPC as SubnetId and VPC parameters.
+    Default: peered-vpc-private
+
+  DbInstanceName:
+    Type: String
+    Description: A name for the RDS instance
+    Default: sql-workshop
+
+  DbSnapshotIdentifier:
+    Type: String
+    Description: Name of the RDS DB Snapshot to create the instance from
+    Default: created-dvdrental
+
+  InstanceProfileName:
+    Type: String
+    Description: Instance Profile for EC2 instance
+    Default: workshop-role
+
+  NetIdFileUri:
+    Type: String
+    Description: S3 URI of file containing NetIDs for access (one per line)
+    Default: s3://nuitrcs-resources/netids.txt
 
 Resources:
 
@@ -92,13 +119,33 @@ Resources:
       KeyName: !Ref EC2KeyName
       SecurityGroupIds: [!Ref SecurityGroup]
       SubnetId: !Ref SubnetId
+      IamInstanceProfile: !Ref InstanceProfileName
+      DependsOn: RDSInstance
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+          /usr/bin/aws s3 cp ${NetIdFileUri} /tmp/netids.txt --region ${AWS::Region}
+          export PGPASSWORD=${DbMasterPassword}
+          export PGUSER=${DbMasterUsername}
+          export PGHOST=${RDSInstance.Endpoint.Address}
+          echo ${RDSInstance.Endpoint.Address} >/tmp/dbhost
+          # copy script
+          # /tmp/setup-sql-workshop-users.sh </tmp/netids.txt
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              postgresql95: []
 
   RDSInstance:
     Type: AWS::RDS::DBInstance
     Properties:
       AllocatedStorage: 100
       DBInstanceClass: !Ref RDSInstanceType
-      DBName: sqlworkshop
+      DBSnapshotIdentifier: !Ref DbSnapshotIdentifier
+      DBSubnetGroupName: !Ref DbSubnetGroupName
       Engine: postgres
       EngineVersion: 9.4.11
       MasterUsername: !Ref DbMasterUsername
@@ -107,3 +154,4 @@ Resources:
       PubliclyAccessible: Yes
       StorageType: standard
       VPCSecurityGroups: [!Ref SecurityGroup]
+      DBInstanceIdentifier: !Ref DbInstanceName

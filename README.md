@@ -13,3 +13,14 @@ students.
 
 The URL of a file containing the usernames of all students must be provided as a
 parameter. Each user's password will just be their username spelled backwards.
+
+Create a stack based on this template using the following command:
+
+```
+aws cloudformation create-stack --stack-name <stack name> --region us-east-2 --template-body file://sql-workshop-stack.yml --parameters ParameterKey=EC2KeyName,ParameterValue=<key name>
+```
+
+TODO:
+
+- copy script to s3 bucket
+- test :)
