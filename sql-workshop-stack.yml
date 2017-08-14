@@ -131,6 +131,9 @@ Resources:
           export PGUSER=${DbMasterUsername}
           export PGHOST=${RDSInstance.Endpoint.Address}
           /tmp/setup-sql-workshop-users.sh </tmp/netids.txt
+      Tags:
+        - Key: Name
+          Value: !Join ['-', [ !Ref 'AWS::StackName', EC2Instance] ]
     DependsOn: RDSInstance
     Metadata:
       AWS::CloudFormation::Init:
@@ -155,3 +158,16 @@ Resources:
       StorageType: standard
       VPCSecurityGroups: [!Ref EC2SecurityGroup]
       DBInstanceIdentifier: !Ref DbInstanceName
+
+Outputs:
+  EC2InstanceDNSName:
+    Description: DNS Name of EC2 Instance
+    Value: !GetAtt [EC2Instance, PublicDnsName]
+    Export:
+      Name: EC2InstanceDNSName
+    
+  RDSInstanceDNSName:
+    Description: DNS Name of RDS Instance
+    Value: !GetAtt [RDSInstance, Endpoint.Address]
+    Export:
+      Name: RDSInstanceDNSName
