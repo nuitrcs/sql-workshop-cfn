@@ -7,7 +7,8 @@
 while read netid
 do
     adduser $netid && echo "${netid}:$(echo ${netid} | rev)" | chpasswd
-    /usr/bin/psql -c "CREATE ROLE ${netid} WITH LOGIN PASSWORD '$(echo ${netid} | rev)';"
+    /usr/bin/psql -d postgres -c "CREATE ROLE ${netid} WITH LOGIN PASSWORD '$(echo ${netid} | rev)' CREATEDB;"
+    /usr/bin/psql -d postgres -c "GRANT ${netid} TO ${PGUSER};"
     /usr/bin/psql -d dvdrental -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${netid};"
-    /usr/bin/psql -c "CREATE DATABASE ${netid} OWNER ${netid};"
+    /usr/bin/psql -d postgres -c "CREATE DATABASE ${netid} OWNER ${netid};"
 done

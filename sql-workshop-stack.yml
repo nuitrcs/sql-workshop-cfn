@@ -125,12 +125,12 @@ Resources:
           #!/bin/bash -xe
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
           /usr/bin/aws s3 cp ${NetIdFileUri} /tmp/netids.txt --region ${AWS::Region}
+          /usr/bin/aws s3 cp s3://nuitrcs-resources/setup-sql-workshop-users.sh /tmp/setup-sql-workshop-users.sh --region ${AWS::Region}
+          /bin/chmod 755 /tmp/setup-sql-workshop-users.sh
           export PGPASSWORD=${DbMasterPassword}
           export PGUSER=${DbMasterUsername}
           export PGHOST=${RDSInstance.Endpoint.Address}
-          echo ${RDSInstance.Endpoint.Address} >/tmp/dbhost
-          # copy script
-          # /tmp/setup-sql-workshop-users.sh </tmp/netids.txt
+          /tmp/setup-sql-workshop-users.sh </tmp/netids.txt
     DependsOn: RDSInstance
     Metadata:
       AWS::CloudFormation::Init:
