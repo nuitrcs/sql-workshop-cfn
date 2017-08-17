@@ -55,7 +55,7 @@ Parameters:
   DbSubnetGroupName:
     Type: String
     Description: DB Subnet Group to place the RDS instance in. Must be same VPC as SubnetId and VPC parameters.
-    Default: peered-vpc-private
+    Default: peered-vpc-public
 
   DbInstanceName:
     Type: String
@@ -77,12 +77,17 @@ Parameters:
     Description: S3 URI of file containing NetIDs for access (one per line)
     Default: s3://nuitrcs-resources/netids.txt
 
+  EC2SecurityGroupName:
+    Type: String
+    Description: Name for the security group
+    Default: SQL Workshop EC2 Security Group
+
 Resources:
 
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: SQL Workshop EC2 Security Group
+      GroupName: !Ref EC2SecurityGroupName
       GroupDescription: Allows inbound SSH and postgresql
       VpcId: !Ref VpcId
       SecurityGroupIngress:
