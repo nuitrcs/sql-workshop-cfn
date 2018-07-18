@@ -1,4 +1,4 @@
-# RCS SQL Workshop AWS Environment
+ # RCS SQL Workshop AWS Environment
 
 This repository contains a cloudformation template that will create an
 environment for teaching a SQL workshop. It creates the following resourcs:
@@ -34,8 +34,8 @@ backwards. The default value for this parameter is
    address of the EC2 instance and the RDS instance.
 
 4. Instruct users to ssh into the EC2 instance using their username (as given in
-   the uploaded text file) and their username spelled backwards as their
-   password.
+   the uploaded text file) as both login and password (that is, their password
+   is their username).
 
 5. Once logged in, they can use the `psql` command to connect to the database,
    using the following command:

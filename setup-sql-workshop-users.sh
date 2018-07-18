@@ -14,8 +14,8 @@ echo "export PGHOST=${PGHOST}" >>/etc/profile
 
 while read netid
 do
-    adduser $netid && echo "${netid}:$(echo ${netid} | rev)" | chpasswd
-    /usr/bin/psql -d postgres -c "CREATE ROLE ${netid} WITH LOGIN PASSWORD '$(echo ${netid} | rev)'"
+    adduser $netid && echo "${netid}:${netid}" | chpasswd
+    /usr/bin/psql -d postgres -c "CREATE ROLE ${netid} WITH LOGIN PASSWORD '${netid}'"
     /usr/bin/psql -d postgres -c "GRANT CONNECT ON DATABASE dvdrental TO ${netid};"
     /usr/bin/psql -d postgres -c "CREATE DATABASE ${netid};"
     /usr/bin/psql -d postgres -c "GRANT ALL ON DATABASE ${netid} to ${netid};"
