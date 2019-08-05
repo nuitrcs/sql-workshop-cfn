@@ -39,8 +39,8 @@ Parameters:
 
   SubnetId:
     Type: String
-    Description: The subnet to launch the EC2 instance into. Defaults to art-rch-rcs peered VPC public subnet 1.
-    Default: subnet-85148dec
+    Description: The subnet to launch the EC2 instance into. Defaults to art-rch-rcs peered-vpc-PubAZ1.
+    Default: subnet-07d256fc7d86a8391
 
   DbMasterUsername:
     Type: String
@@ -155,7 +155,7 @@ Resources:
       DBSnapshotIdentifier: !Ref DbSnapshotIdentifier
       DBSubnetGroupName: !Ref DbSubnetGroupName
       Engine: postgres
-      EngineVersion: 9.4.11
+      EngineVersion: 11.4
       MasterUsername: !Ref DbMasterUsername
       MasterUserPassword: !Ref DbMasterPassword
       MultiAZ: No
