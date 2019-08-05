@@ -14,7 +14,7 @@ students.
 The S3 URL of a file containing the usernames of all students must be provided
 as a parameter. Each user's password will just be their username spelled
 backwards. The default value for this parameter is
-`s3://nuitrcs-resources/netids.txt`.
+`s3://nuitrcs-resources/netids.txt`, which is in the ART-RCH-RCS account.
 
 ## How to use this Cloudformation Template
 
