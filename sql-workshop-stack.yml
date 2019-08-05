@@ -65,7 +65,7 @@ Parameters:
   DbSnapshotIdentifier:
     Type: String
     Description: Name of the RDS DB Snapshot to create the instance from
-    Default: created-dvdrental
+    Default: created-workshop
 
   InstanceProfileName:
     Type: String
